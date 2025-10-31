@@ -11,9 +11,6 @@ ARG DOCKER_PHP_EXTENSION_INSTALLER_VERSION="2.1.80"
 # See: https://github.com/composer/composer
 ARG COMPOSER_VERSION="2.6"
 
-# See: https://nginx.org/
-ARG NGINX_VERSION="1.25.3"
-
 # See: https://github.com/ddollar/forego
 ARG FOREGO_VERSION="0.17.2"
 
@@ -44,19 +41,13 @@ ARG APT_PACKAGES_EXTRA=
 # ! NOTE: imagick is installed from [master] branch on GitHub due to 8.3 bug on ARM that haven't
 # ! been released yet (after +10 months)!
 # ! See: https://github.com/Imagick/imagick/pull/641
-ARG PHP_PECL_EXTENSIONS="redis https://codeload.github.com/Imagick/imagick/tar.gz/28f27044e435a2b203e32675e942eb8de620ee58"
+ARG PHP_PECL_EXTENSIONS="redis"
 ARG PHP_PECL_EXTENSIONS_EXTRA=
 
 # Extensions installed via [docker-php-ext-install]
 ARG PHP_EXTENSIONS="intl bcmath zip pcntl exif curl gd"
 ARG PHP_EXTENSIONS_EXTRA=""
 ARG PHP_EXTENSIONS_DATABASE="pdo_pgsql pdo_mysql pdo_sqlite"
-
-# GPG key for nginx apt repository
-ARG NGINX_GPGKEY="573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62"
-
-# GPP key path for nginx apt repository
-ARG NGINX_GPGKEY_PATH="/usr/share/keyrings/nginx-archive-keyring.gpg"
 
 #######################################################
 # Docker "copy from" images
@@ -71,20 +62,6 @@ FROM composer:${COMPOSER_VERSION} AS composer-image
 #
 # NOTE: Docker will *not* pull this image unless it's referenced (via build target)
 FROM mlocati/php-extension-installer:${DOCKER_PHP_EXTENSION_INSTALLER_VERSION} AS php-extension-installer
-
-# nginx webserver from Docker Hub.
-# Used to copy some docker-entrypoint files for [nginx-runtime]
-#
-# NOTE: Docker will *not* pull this image unless it's referenced (via build target)
-FROM nginx:${NGINX_VERSION} AS nginx-image
-
-# Forego is a Procfile "runner" that makes it trival to run multiple
-# processes under a simple init / PID 1 process.
-#
-# NOTE: Docker will *not* pull this image unless it's referenced (via build target)
-#
-# See: https://github.com/nginx-proxy/forego
-FROM nginxproxy/forego:${FOREGO_VERSION}-debian AS forego-image
 
 # Dottie makes working with .env files easier and safer
 #
@@ -289,7 +266,6 @@ ARG RUNTIME_UID
 ENV RUNTIME_UID=${RUNTIME_UID}
 ENV RUNTIME_GID=${RUNTIME_GID}
 
-COPY --link --from=forego-image /usr/local/bin/forego /usr/local/bin/forego
 COPY --link --from=dottie-image /dottie /usr/local/bin/dottie
 COPY --link --from=gomplate-image /usr/local/bin/gomplate /usr/local/bin/gomplate
 COPY --link --from=composer-image /usr/bin/composer /usr/bin/composer
@@ -320,45 +296,3 @@ RUN set -ex \
     && a2enconf remoteip
 
 CMD ["apache2-foreground"]
-
-#######################################################
-# Runtime: fpm
-#######################################################
-
-FROM shared-runtime AS fpm-runtime
-
-COPY docker/fpm/root /
-
-CMD ["php-fpm"]
-
-#######################################################
-# Runtime: nginx
-#######################################################
-
-FROM shared-runtime AS nginx-runtime
-
-ARG NGINX_GPGKEY
-ARG NGINX_GPGKEY_PATH
-ARG NGINX_VERSION
-ARG PHP_DEBIAN_RELEASE
-ARG PHP_VERSION
-ARG TARGETPLATFORM
-
-# Install nginx dependencies
-RUN --mount=type=cache,id=pixelfed-apt-lists-${PHP_VERSION}-${PHP_DEBIAN_RELEASE}-${TARGETPLATFORM},sharing=locked,target=/var/lib/apt/lists \
-    --mount=type=cache,id=pixelfed-apt-cache-${PHP_VERSION}-${PHP_DEBIAN_RELEASE}-${TARGETPLATFORM},sharing=locked,target=/var/cache/apt \
-    set -ex \
-    && gpg1 --keyserver "hkp://keyserver.ubuntu.com:80" --keyserver-options timeout=10 --recv-keys "${NGINX_GPGKEY}" \
-    && gpg1 --export "$NGINX_GPGKEY" > "$NGINX_GPGKEY_PATH" \
-    && echo "deb [signed-by=${NGINX_GPGKEY_PATH}] https://nginx.org/packages/mainline/debian/ ${PHP_DEBIAN_RELEASE} nginx" >> /etc/apt/sources.list.d/nginx.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends nginx=${NGINX_VERSION}*
-
-# copy docker entrypoints from the *real* nginx image directly
-COPY --link --from=nginx-image /docker-entrypoint.d /docker/entrypoint.d/
-COPY docker/nginx/root /
-COPY docker/nginx/Procfile .
-
-STOPSIGNAL SIGQUIT
-
-CMD ["forego", "start", "-r"]
