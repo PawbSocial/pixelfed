@@ -41,6 +41,11 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: apache-runtime
+          build-args: |
+            PHP_VERSION=8.4
+            PHP_BASE_TYPE=apache
+            PHP_DEBIAN_RELEASE=bookworm
           file: ./Dockerfile
           push: true
           tags: |
