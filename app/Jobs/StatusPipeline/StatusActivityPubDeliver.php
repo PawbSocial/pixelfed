@@ -88,8 +88,6 @@ class StatusActivityPubDeliver implements ShouldQueue
 			$relayService = new \App\Services\RelayService();
 			$relayInboxes = $relayService->getActiveRelayInboxes();
 
-            Log::info('Adding relay inboxes to audience', ['relays' => $relayInboxes]);
-
 			$audience = array_values(array_unique(array_merge($audience, $relayInboxes)));
 		}
 
