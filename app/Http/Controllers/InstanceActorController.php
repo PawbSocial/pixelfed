@@ -39,12 +39,20 @@ class InstanceActorController extends Controller
 			return response('', 400);
 		}
 
+        $type = $activity['type'];
 		$relayService = new RelayService();
         $relay = $relayService->verifyIncomingRelayActivity($headers, $payload);
 
         // If we couldn't verify the relay, return 401
         if ($relay === null) {
-            return response('', 401);
+            if (in_array($type, ['Delete']) && is_string($activity['object'] ?? null)) {
+                // Instances (apparently, at least mastodon.social) send Delete activities to the instance actor
+                // Since DeleteWorker performs a signature check, we can safely forward the activity there
+                dispatch(new DeleteWorker($headers, $payload))->onQueue('inbox');
+                return response('', 202);
+            } else {
+                return response('', 401);
+            }
         }
 
         // If we couldn't process the activity, return 400
