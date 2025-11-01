@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Instance;
+use App\Profile;
 use App\Jobs\ProfilePipeline\HandleUpdateActivity;
 use App\Jobs\StatusPipeline\StatusRemoteUpdatePipeline;
 use App\Models\InstanceActor;

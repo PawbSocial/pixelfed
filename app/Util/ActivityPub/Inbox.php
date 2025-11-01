@@ -1291,6 +1291,8 @@ class Inbox
 
     public function handleFlagActivity()
     {
+        Log::info('Received Flag Activity', ['payload' => $this->payload]);
+
         if (! isset(
             $this->payload['id'],
             $this->payload['type'],
