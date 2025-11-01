@@ -24,6 +24,7 @@ use App\Jobs\FollowPipeline\UnfollowPipeline;
 use App\Jobs\HomeFeedPipeline\FeedWarmCachePipeline;
 use App\Jobs\ImageOptimizePipeline\ImageOptimize;
 use App\Jobs\LikePipeline\LikePipeline;
+use App\Jobs\LikePipeline\UnlikePipeline;
 use App\Jobs\MediaPipeline\MediaDeletePipeline;
 use App\Jobs\MediaPipeline\MediaSyncLicensePipeline;
 use App\Jobs\NotificationPipeline\NotificationWarmUserCache;
