@@ -254,7 +254,7 @@ class RelayService
         $relay = Relay::where('actor_url', $actorUrl)->first();
 
         if (!$relay) {
-            Log::info('Received activity from unknown relay', ['actor' => $actorUrl]);
+            Log::info('Received activity from unknown actor (expected relay)', ['actor' => $actorUrl, 'type' => $activity['type'], 'id' => $activity['id'] ?? 'unknown', 'all_activity' => $activity]);
             return false;
         }
 
