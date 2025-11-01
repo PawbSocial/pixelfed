@@ -92,6 +92,13 @@
 					</li>
 
 					<li class="nav-item">
+						<a class="nav-link {{request()->is('*relay*')?'active':''}}" href="{{route('admin.relays')}}">
+							<i class="ni ni-bold-right text-primary"></i>
+							<span class="nav-link-text">Relays</span>
+						</a>
+					</li>
+
+					<li class="nav-item">
 						<a class="nav-link {{request()->is('*media*')?'active':''}}" href="{{route('admin.media')}}">
 							<i class="ni ni-bold-right text-primary"></i>
 							<span class="nav-link-text">Media</span>

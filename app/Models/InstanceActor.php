@@ -88,8 +88,25 @@ class InstanceActor extends Model
 				'owner' => $this->permalink(),
 				'publicKeyPem' => $this->public_key
 			],
-			'manuallyApprovesFollowers' => true,
+			'manuallyApprovesFollowers' => false, // Changed to false for relay compatibility
+			'discoverable' => true, // Added for better federation compatibility
 			'url' => url('/site/kb/instance-actor')
 		];
+	}
+
+	/**
+	 * Get the key ID for HTTP signatures
+	 */
+	public function getKeyId(): string
+	{
+		return $this->permalink('#main-key');
+	}
+
+	/**
+	 * Check if instance actor has been properly initialized
+	 */
+	public function isInitialized(): bool
+	{
+		return !empty($this->private_key) && !empty($this->public_key);
 	}
 }

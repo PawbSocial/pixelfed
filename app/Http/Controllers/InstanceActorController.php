@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Jobs\InboxPipeline\DeleteWorker;
 use App\Models\InstanceActor;
+use App\Services\RelayService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Cache;
 
 class InstanceActorController extends Controller
@@ -17,9 +20,48 @@ class InstanceActorController extends Controller
 		return response($res)->header('Content-Type', 'application/activity+json');
 	}
 
-	public function inbox()
+	public function inbox(Request $request)
 	{
-		return;
+		if (!config('federation.activitypub.relay.enabled', false)) {
+			return response('', 404);
+		}
+
+		$headers = $request->headers->all();
+		$payload = $request->getContent();
+
+		if (!$payload || empty($payload)) {
+			return response('', 400);
+		}
+
+        Log::info('Received relay activity', ['headers' => $headers, 'payload' => $payload]);
+
+		$activity = json_decode($payload, true, 8);
+		if (!isset($activity['type'], $activity['actor'])) {
+			return response('', 400);
+		}
+
+        $type = $activity['type'];
+		$relayService = new RelayService();
+        $relay = $relayService->verifyIncomingRelayActivity($headers, $payload);
+
+        // If we couldn't verify the relay, return 401
+        if ($relay === null) {
+            if (in_array($type, ['Delete']) && is_string($activity['object'] ?? null)) {
+                // Instances (apparently, at least mastodon.social) send Delete activities to the instance actor
+                // Since DeleteWorker performs a signature check, we can safely forward the activity there
+                dispatch(new DeleteWorker($headers, $payload))->onQueue('inbox');
+                return response('', 202);
+            } else {
+                return response('', 401);
+            }
+        }
+
+        // If we couldn't process the activity, return 400
+        if (! $relayService->processIncomingRelayActivity($activity, $relay)) {
+            return response('', 400);
+        }
+
+		return response('', 202);
 	}
 
 	public function outbox()

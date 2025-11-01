@@ -188,5 +188,20 @@ Route::domain(config('pixelfed.domain.admin'))->prefix('i/admin')->group(functio
         Route::post('settings/autofollow/add', 'AdminController@settingsApiAutofollowAdd');
         Route::post('settings/autofollow/delete', 'AdminController@settingsApiAutofollowDelete');
         Route::post('settings/update/{type}', 'AdminController@settingsApiUpdateType');
+
+        // Relay API routes
+        Route::get('relay/stats', 'AdminController@relayApiStats');
+        Route::post('relay/{relay}/test', 'AdminController@relayApiTest');
+        Route::post('relay/{relay}/follow', 'AdminController@relayApiFollow');
+        Route::post('relay/{relay}/unfollow', 'AdminController@relayApiUnfollow');
     });
+
+    // Relay management routes
+    Route::get('relay', 'AdminController@relays')->name('admin.relays');
+    Route::get('relay/create', 'AdminController@relayCreate')->name('admin.relay.create');
+    Route::post('relay', 'AdminController@relayStore')->name('admin.relay.store');
+    Route::get('relay/{relay}', 'AdminController@relayShow')->name('admin.relay.show');
+    Route::get('relay/{relay}/edit', 'AdminController@relayEdit')->name('admin.relay.edit');
+    Route::put('relay/{relay}', 'AdminController@relayUpdate')->name('admin.relay.update');
+    Route::delete('relay/{relay}', 'AdminController@relayDestroy')->name('admin.relay.destroy');
 });

@@ -104,8 +104,15 @@ class SharePipeline implements ShouldQueue
 
         $audience = $status->profile->getAudienceInbox();
 
+        // Add relay inboxes for public shares
+        if (config('federation.activitypub.relay.enabled', false) && $status->scope === 'public') {
+            $relayService = new \App\Services\RelayService();
+            $relayInboxes = $relayService->getActiveRelayInboxes();
+            $audience = array_values(array_unique(array_merge($audience, $relayInboxes)));
+        }
+
         if (empty($audience) || $status->scope != 'public') {
-            // Return on profiles with no remote followers
+            // Return if no delivery targets (including relays) or not public
             return;
         }
 

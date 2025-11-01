@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AdminDiscoverController;
 use App\Http\Controllers\Admin\AdminHashtagsController;
 use App\Http\Controllers\Admin\AdminInstanceController;
 use App\Http\Controllers\Admin\AdminMediaController;
+use App\Http\Controllers\Admin\AdminRelayController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -41,6 +42,7 @@ class AdminController extends Controller
         AdminHashtagsController,
         AdminInstanceController,
         AdminMediaController,
+        AdminRelayController,
         AdminReportController,
         AdminSettingsController,
         AdminUserController;

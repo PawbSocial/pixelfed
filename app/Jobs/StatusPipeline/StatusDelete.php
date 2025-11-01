@@ -170,6 +170,13 @@ class StatusDelete implements ShouldQueue
 
         $audience = $status->profile->getAudienceInbox();
 
+        // Add relay inboxes for public shares
+        if (config('federation.activitypub.relay.enabled', false) && $status->scope === 'public') {
+            $relayService = new \App\Services\RelayService();
+            $relayInboxes = $relayService->getActiveRelayInboxes();
+            $audience = array_values(array_unique(array_merge($audience, $relayInboxes)));
+        }
+
         $fractal = new Fractal\Manager();
         $fractal->setSerializer(new ArraySerializer());
         $resource = new Fractal\Resource\Item($status, new DeleteNote());

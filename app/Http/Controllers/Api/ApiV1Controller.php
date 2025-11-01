@@ -24,6 +24,7 @@ use App\Jobs\FollowPipeline\UnfollowPipeline;
 use App\Jobs\HomeFeedPipeline\FeedWarmCachePipeline;
 use App\Jobs\ImageOptimizePipeline\ImageOptimize;
 use App\Jobs\LikePipeline\LikePipeline;
+use App\Jobs\LikePipeline\UnlikePipeline;
 use App\Jobs\MediaPipeline\MediaDeletePipeline;
 use App\Jobs\MediaPipeline\MediaSyncLicensePipeline;
 use App\Jobs\NotificationPipeline\NotificationWarmUserCache;
@@ -1503,6 +1504,8 @@ class ApiV1Controller extends Controller
         $status['favourites_count'] = isset($ogStatus) ? $ogStatus->likes_count : $status['favourites_count'] - 1;
         $status['bookmarked'] = BookmarkService::get($user->profile_id, $status['id']);
         $status['reblogged'] = ReblogService::get($user->profile_id, $status['id']);
+
+        UnlikePipeline::dispatch($like)->onQueue('feed');
 
         return $this->json($status);
     }
