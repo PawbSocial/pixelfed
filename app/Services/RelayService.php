@@ -392,9 +392,9 @@ class RelayService
         /**
          * Mostly copied across from Inbox.php...
          */
-        if (is_string($obj) == true && $actor == $obj && Helpers::validateUrl($obj)) {
+        if (is_string($object) == true && $actor == $object && Helpers::validateUrl($object)) {
             // Profile deletion
-            $profile = Profile::whereRemoteUrl($obj)->first();
+            $profile = Profile::whereRemoteUrl($object)->first();
             if (! $profile || $profile->private_key != null) {
                 return false;
             }
