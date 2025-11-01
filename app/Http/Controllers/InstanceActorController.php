@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\InboxPipeline\DeleteWorker;
 use App\Models\InstanceActor;
 use App\Services\RelayService;
 use Illuminate\Http\Request;
