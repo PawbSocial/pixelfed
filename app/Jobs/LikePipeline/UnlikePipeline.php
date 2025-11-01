@@ -64,8 +64,8 @@ class UnlikePipeline implements ShouldQueue
 
 		StatusService::refresh($status->id);
 
-		if($actor->id !== $status->profile_id && $status->url && $actor->domain == null) {
-			$this->remoteLikeDeliver();
+		if($status->url && $actor->domain == null) {
+			$this->remoteUnlikeDeliver();
 		}
 
 		$exists = Notification::whereProfileId($status->profile_id)
@@ -90,7 +90,7 @@ class UnlikePipeline implements ShouldQueue
 		return;
 	}
 
-	public function remoteLikeDeliver()
+	public function remoteUnlikeDeliver()
 	{
 		$like = $this->like;
 		$status = $this->like->status;
