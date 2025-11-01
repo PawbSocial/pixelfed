@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Instance;
+use App\Jobs\ProfilePipeline\HandleUpdateActivity;
+use App\Jobs\StatusPipeline\StatusRemoteUpdatePipeline;
 use App\Models\InstanceActor;
 use App\Models\Relay;
 use App\Util\ActivityPub\Helpers;
@@ -272,6 +274,12 @@ class RelayService
             case 'Undo':
                 return $this->handleRelayUndo($relay, $activity);
 
+            case 'Update':
+                return $this->handleRelayUpdate($relay, $activity);
+
+            case 'Delete':
+                return $this->handleRelayDelete($relay, $activity);
+
             default:
                 Log::info('Unsupported relay activity type', ['type' => $activity['type']]);
                 return false;
@@ -314,6 +322,126 @@ class RelayService
         }
 
         return false;
+    }
+
+    /**
+     * Handle Update activity from relay
+     */
+    protected function handleRelayUpdate(Relay $relay, array $activity): bool
+    {
+        if (! isset($activity['type'], $activity['id'])) {
+            return false;
+        }
+
+        if (! Helpers::validateUrl($activity['id'])) {
+            return false;
+        }
+
+        if ($activity['type'] === 'Note') {
+            if (Status::whereObjectUrl($activity['id'])->exists()) {
+                StatusRemoteUpdatePipeline::dispatch($activity['id'], $activity);
+            }
+        } elseif ($activity['type'] === 'Person') {
+            if (UpdatePersonValidator::validate($this->payload)) {
+                HandleUpdateActivity::dispatch($activity)->onQueue('low');
+            }
+        }
+    }
+
+    /**
+     * Handle Delete activity from relay
+     */
+    protected function handleRelayDelete(Relay $relay, array $activity): bool
+    {
+        $actor = $activity['actor'] ?? null;
+        $object = $activity['object'] ?? null;
+
+        if (! isset($actor, $object)) {
+            return false;
+        }
+
+        /**
+         * Mostly copied across from Inbox.php...
+         */
+        if (is_string($obj) == true && $actor == $obj && Helpers::validateUrl($obj)) {
+            // Profile deletion
+            $profile = Profile::whereRemoteUrl($obj)->first();
+            if (! $profile || $profile->private_key != null) {
+                return false;
+            }
+            DeleteRemoteProfilePipeline::dispatch($profile)->onQueue('low');
+
+            return true;
+        } else {
+            if (! isset($object['id'], $object['type'])) {
+                return false;
+            }
+
+            $type = $object['type'];
+            $typeCheck = in_array($type, ['Person', 'Tombstone', 'Story']);
+
+            if (! Helpers::validateUrl($actor) || ! Helpers::validateUrl($object['id']) || ! $typeCheck) {
+                return false;
+            }
+
+            if (parse_url($object['id'], PHP_URL_HOST) != parse_url($actor, PHP_URL_HOST)) {
+                return false;
+            }
+
+            $id = $object['id'];
+
+            switch ($type) {
+                case 'Person':
+                    $profile = Profile::whereRemoteUrl($actor)->first();
+                    if (! $profile || $profile->private_key != null) {
+                        return false;
+                    }
+                    DeleteRemoteProfilePipeline::dispatch($profile)->onQueue('low');
+
+                    return true;
+
+                case 'Tombstone':
+                    $profile = Profile::whereRemoteUrl($actor)->first();
+                    if (! $profile || $profile->private_key != null) {
+                        return false;
+                    }
+
+                    $status = Status::where('object_url', $id)->first();
+                    if (! $status) {
+                        $status = Status::where('url', $id)->first();
+                        if (! $status) {
+                            return false;
+                        }
+                    }
+
+                    if ($status->profile_id != $profile->id) {
+                        return false;
+                    }
+
+                    if ($status->scope && in_array($status->scope, ['public', 'unlisted', 'private'])) {
+                        if ($status->type && ! in_array($status->type, ['story:reaction', 'story:reply', 'reply'])) {
+                            FeedRemoveRemotePipeline::dispatch($status->id, $status->profile_id)->onQueue('feed');
+                        }
+                    }
+
+                    RemoteStatusDelete::dispatch($status)->onQueue('low');
+
+                    return true;
+
+                case 'Story':
+                    $story = Story::whereObjectId($id)->first();
+
+                    if (!$story) {
+                        return false;
+                    }
+
+                    StoryExpire::dispatch($story)->onQueue('story');
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
     }
 
     /**
