@@ -249,7 +249,8 @@ class RelayService
      */
     public function verifyIncomingRelayActivity(array $headers, string $payload): ?Relay
     {
-        $signatureData = HttpSignature::parseSignatureHeader($headers);
+		$signature = is_array($headers['signature']) ? $headers['signature'][0] : $headers['signature'];
+        $signatureData = HttpSignature::parseSignatureHeader($signature);
 
         if (!$signatureData) {
             return null;
