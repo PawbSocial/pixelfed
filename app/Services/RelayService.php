@@ -365,7 +365,7 @@ class RelayService
                         'status_id' => $status->id,
                         'domain' => $actor->domain
                     ]);
-                    return;
+                    return false;
                 }
 
                 $blocks = UserFilterService::blocks($parent->profile_id);
@@ -375,7 +375,7 @@ class RelayService
                         'status_id' => $status->id,
                         'actor_id' => $actor->id
                     ]);
-                    return;
+                    return false;
                 }
 
                 // Update relay health tracking
