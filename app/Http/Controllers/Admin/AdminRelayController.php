@@ -97,10 +97,26 @@ trait AdminRelayController
     {
         $request->validate([
             'name' => 'nullable|string|max:255',
+            'inbox_url' => ['required', 'url', Rule::unique('relays', 'inbox_url')->ignore($relay)],
+            'actor_url' => 'nullable|url',
             'is_active' => 'boolean',
+            'following' => 'boolean',
         ]);
 
-        $relay->update($request->only(['name', 'is_active']));
+        // Handle the actor URL - if empty, we'll derive it from inbox URL
+        $actorUrl = $request->input('actor_url');
+        if (empty($actorUrl) && $request->input('inbox_url') !== $relay->inbox_url) {
+            // If inbox URL changed and actor URL is empty, derive it
+            $this->initializeRelayService();
+            $actorUrl = $this->relayService->deriveActorUrl($request->input('inbox_url'));
+        }
+
+        $updateData = $request->only(['name', 'inbox_url', 'is_active', 'following']);
+        if ($actorUrl) {
+            $updateData['actor_url'] = $actorUrl;
+        }
+
+        $relay->update($updateData);
 
         return redirect()
             ->route('admin.relay.show', $relay)

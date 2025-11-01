@@ -429,7 +429,7 @@ class RelayService
     /**
      * Derive actor URL from inbox URL
      */
-    protected function deriveActorUrl(string $inboxUrl): string
+    public function deriveActorUrl(string $inboxUrl): string
     {
         // For most relays, the actor URL follows the pattern:
         // Inbox: https://relay.example.com/inbox
