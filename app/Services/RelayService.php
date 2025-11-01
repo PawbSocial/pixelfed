@@ -245,19 +245,45 @@ class RelayService
     }
 
     /**
-     * Process incoming relay activity (Follow, Undo, etc.)
+     * Verify incoming relay activity
      */
-    public function processIncomingRelayActivity(array $activity): bool
+    public function verifyIncomingRelayActivity(array $headers, string $payload): ?Relay
     {
-        if (!isset($activity['type'], $activity['actor'])) {
-            return false;
+        $signatureData = HttpSignature::extractSignatureData($headers);
+
+        if (!$signatureData) {
+            return null;
         }
 
-        $actorUrl = $activity['actor'];
-        $relay = Relay::where('actor_url', $actorUrl)->first();
+        $keyId = $signatureData['keyId'] ?? null;
+        if (!$keyId) {
+            return null;
+        }
 
-        if (!$relay) {
-            Log::info('Received activity from unknown actor (expected relay)', ['actor' => $actorUrl, 'type' => $activity['type'], 'id' => $activity['id'] ?? 'unknown', 'all_activity' => $activity]);
+        $relay = Relay::where('actor_url', 'like', parse_url($keyId, PHP_URL_HOST), '%')->first();
+        if (!$relay || !$relay->metadata || !isset($relay->metadata['public_key'])) {
+            return null;
+        }
+
+        $publicKey = $relay->metadata['public_key'];
+
+        [$verified, $signingString] = HttpSignature::verify(
+            $publicKey,
+            $signatureData,
+            $headers,
+            $_SERVER['REQUEST_URI'] ?? '/',
+            $payload
+        );
+
+        return $verified ? $relay : null;
+    }
+
+    /**
+     * Process incoming relay activity (Follow, Undo, etc.)
+     */
+    public function processIncomingRelayActivity(array $activity, Relay $relay): bool
+    {
+        if (!isset($activity['type'], $activity['actor'])) {
             return false;
         }
 
@@ -594,6 +620,7 @@ class RelayService
                 'inbox' => $data['inbox'] ?? null,
                 'outbox' => $data['outbox'] ?? null,
                 'endpoints' => $data['endpoints'] ?? null,
+                'public_key' => $data['publicKey']['publicKeyPem'] ?? null,
                 'software' => $this->detectRelaySoftware($data),
             ];
         } catch (\Exception $e) {

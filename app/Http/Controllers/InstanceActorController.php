@@ -40,7 +40,17 @@ class InstanceActorController extends Controller
 		}
 
 		$relayService = new RelayService();
-        $relayService->processIncomingRelayActivity($activity);
+        $relay = $relayService->verifyIncomingRelayActivity($headers, $payload);
+
+        // If we couldn't verify the relay, return 401
+        if ($relay === null) {
+            return response('', 401);
+        }
+
+        // If we couldn't process the activity, return 400
+        if (! $relayService->processIncomingRelayActivity($activity, $relay)) {
+            return response('', 400);
+        }
 
 		return response('', 202);
 	}
