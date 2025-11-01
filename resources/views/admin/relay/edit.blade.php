@@ -180,7 +180,7 @@
 </div>
 @endsection
 
-@section('script')
+@push('scripts')
 <script>
 function testRelay(relayId) {
     axios.post(`/i/admin/api/relay/${relayId}/test`)
@@ -196,4 +196,4 @@ function testRelay(relayId) {
         });
 }
 </script>
-@endsection
+@endpush

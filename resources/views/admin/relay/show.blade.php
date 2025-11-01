@@ -160,7 +160,7 @@
 </div>
 @endsection
 
-@section('script')
+@push('scripts')
 <script>
 function followRelay(relayId) {
     if (confirm('Follow this relay?')) {
@@ -212,4 +212,4 @@ function confirmDelete(relayId) {
     }
 }
 </script>
-@endsection
+@endpush
