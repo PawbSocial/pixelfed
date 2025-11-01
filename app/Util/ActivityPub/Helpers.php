@@ -1283,7 +1283,8 @@ class Helpers
     public static function handleProfileAvatar(Profile $profile): void
     {
         if (! $profile->last_fetched_at ||
-            $profile->last_fetched_at->lt(now()->subMonths(3))
+            $profile->last_fetched_at->lt(now()->subMonths(3)) ||
+            (! $profile->avatar && $profile->last_fetched_at->lt(now()->subHours(4)))
         ) {
             RemoteAvatarFetch::dispatch($profile);
         }

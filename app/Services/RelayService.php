@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Instance;
 use App\Models\InstanceActor;
 use App\Models\Relay;
 use App\Util\ActivityPub\Helpers;
