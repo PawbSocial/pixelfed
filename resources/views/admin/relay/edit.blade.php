@@ -17,15 +17,15 @@
                 <form method="POST" action="{{ route('admin.relay.update', $relay) }}">
                     @csrf
                     @method('PUT')
-                    
+
                     <div class="form-group row">
                         <label for="name" class="col-md-3 col-form-label text-md-right">Name</label>
                         <div class="col-md-9">
-                            <input type="text" 
-                                   class="form-control @error('name') is-invalid @enderror" 
-                                   id="name" 
-                                   name="name" 
-                                   value="{{ old('name', $relay->name) }}" 
+                            <input type="text"
+                                   class="form-control @error('name') is-invalid @enderror"
+                                   id="name"
+                                   name="name"
+                                   value="{{ old('name', $relay->name) }}"
                                    placeholder="Optional display name">
                             @error('name')
                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -35,15 +35,15 @@
                             </small>
                         </div>
                     </div>
-                    
+
                     <div class="form-group row">
                         <label for="inbox_url" class="col-md-3 col-form-label text-md-right">Inbox URL *</label>
                         <div class="col-md-9">
-                            <input type="url" 
-                                   class="form-control @error('inbox_url') is-invalid @enderror" 
-                                   id="inbox_url" 
-                                   name="inbox_url" 
-                                   value="{{ old('inbox_url', $relay->inbox_url) }}" 
+                            <input type="url"
+                                   class="form-control @error('inbox_url') is-invalid @enderror"
+                                   id="inbox_url"
+                                   name="inbox_url"
+                                   value="{{ old('inbox_url', $relay->inbox_url) }}"
                                    required>
                             @error('inbox_url')
                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -53,15 +53,15 @@
                             </small>
                         </div>
                     </div>
-                    
+
                     <div class="form-group row">
                         <label for="actor_url" class="col-md-3 col-form-label text-md-right">Actor URL</label>
                         <div class="col-md-9">
-                            <input type="url" 
-                                   class="form-control @error('actor_url') is-invalid @enderror" 
-                                   id="actor_url" 
-                                   name="actor_url" 
-                                   value="{{ old('actor_url', $relay->actor_url) }}" 
+                            <input type="url"
+                                   class="form-control @error('actor_url') is-invalid @enderror"
+                                   id="actor_url"
+                                   name="actor_url"
+                                   value="{{ old('actor_url', $relay->actor_url) }}"
                                    placeholder="Auto-detected from inbox URL">
                             @error('actor_url')
                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -71,15 +71,15 @@
                             </small>
                         </div>
                     </div>
-                    
+
                     <div class="form-group row">
                         <div class="col-md-9 offset-md-3">
                             <div class="form-check">
-                                <input type="checkbox" 
-                                       class="form-check-input" 
-                                       id="is_active" 
-                                       name="is_active" 
-                                       value="1" 
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       id="is_active"
+                                       name="is_active"
+                                       value="1"
                                        {{ old('is_active', $relay->is_active) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_active">
                                     Active
@@ -90,15 +90,15 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group row">
                         <div class="col-md-9 offset-md-3">
                             <div class="form-check">
-                                <input type="checkbox" 
-                                       class="form-check-input" 
-                                       id="following" 
-                                       name="following" 
-                                       value="1" 
+                                <input type="checkbox"
+                                       class="form-check-input"
+                                       id="following"
+                                       name="following"
+                                       value="1"
                                        {{ old('following', $relay->following) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="following">
                                     Following
@@ -109,7 +109,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group row">
                         <div class="col-md-9 offset-md-3">
                             <button type="submit" class="btn btn-primary">
@@ -124,7 +124,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-12 col-md-4">
         <div class="card shadow-none border">
             <div class="card-header">
@@ -139,7 +139,7 @@
                         <span class="badge badge-secondary">Inactive</span>
                     @endif
                 </div>
-                
+
                 <div class="mb-3">
                     <strong>Following:</strong>
                     @if($relay->following)
@@ -148,14 +148,14 @@
                         <span class="badge badge-outline-secondary">No</span>
                     @endif
                 </div>
-                
+
                 @if($relay->metadata)
                     <div class="mb-3">
                         <strong>Software:</strong>
                         {{ $relay->metadata['software'] ?? 'Unknown' }}
                     </div>
                 @endif
-                
+
                 <div class="mb-3">
                     <strong>Health:</strong>
                     @if($relay->failed_delivery_count > 0)
@@ -166,9 +166,9 @@
                         <span class="text-success">Healthy</span>
                     @endif
                 </div>
-                
+
                 <hr>
-                
+
                 <div class="d-grid gap-2">
                     <button class="btn btn-outline-info btn-sm" onclick="testRelay({{ $relay->id }})">
                         <i class="fas fa-vial mr-1"></i> Test Connection

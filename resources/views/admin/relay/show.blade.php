@@ -21,12 +21,12 @@
                     <div class="col-md-3"><strong>ID:</strong></div>
                     <div class="col-md-9">{{ $relay->id }}</div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Name:</strong></div>
                     <div class="col-md-9">{{ $relay->name ?: 'N/A' }}</div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Inbox URL:</strong></div>
                     <div class="col-md-9">
@@ -36,7 +36,7 @@
                         </a>
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Actor URL:</strong></div>
                     <div class="col-md-9">
@@ -50,7 +50,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Status:</strong></div>
                     <div class="col-md-9">
@@ -59,7 +59,7 @@
                         @else
                             <span class="badge badge-secondary">Inactive</span>
                         @endif
-                        
+
                         @if($relay->following)
                             <span class="badge badge-primary ml-2">Following</span>
                         @else
@@ -67,7 +67,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 @if($relay->metadata)
                     <div class="row mb-3">
                         <div class="col-md-3"><strong>Software:</strong></div>
@@ -75,7 +75,7 @@
                             {{ $relay->metadata['software'] ?? 'Unknown' }}
                         </div>
                     </div>
-                    
+
                     @if(isset($relay->metadata['summary']))
                         <div class="row mb-3">
                             <div class="col-md-3"><strong>Description:</strong></div>
@@ -83,7 +83,7 @@
                         </div>
                     @endif
                 @endif
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Health:</strong></div>
                     <div class="col-md-9">
@@ -99,7 +99,7 @@
                         @else
                             <span class="text-success">Healthy</span>
                         @endif
-                        
+
                         @if($relay->last_successful_delivery_at)
                             <small class="text-muted d-block">
                                 Last successful: {{ $relay->last_successful_delivery_at->diffForHumans() }}
@@ -107,7 +107,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <div class="row mb-3">
                     <div class="col-md-3"><strong>Created:</strong></div>
                     <div class="col-md-9">{{ $relay->created_at->format('M j, Y \a\t g:i A') }}</div>
@@ -115,7 +115,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-12 col-md-4">
         <div class="card shadow-none border">
             <div class="card-header">
@@ -126,7 +126,7 @@
                     <a href="{{ route('admin.relay.edit', $relay) }}" class="btn btn-outline-primary btn-sm">
                         <i class="fas fa-edit mr-1"></i> Edit
                     </a>
-                    
+
                     @if($relay->following)
                         <button class="btn btn-outline-warning btn-sm" onclick="unfollowRelay({{ $relay->id }})">
                             <i class="fas fa-user-times mr-1"></i> Unfollow
@@ -136,13 +136,13 @@
                             <i class="fas fa-user-plus mr-1"></i> Follow
                         </button>
                     @endif
-                    
+
                     <button class="btn btn-outline-info btn-sm" onclick="testRelay({{ $relay->id }})">
                         <i class="fas fa-vial mr-1"></i> Test Connection
                     </button>
-                    
+
                     <hr>
-                    
+
                     <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $relay->id }})">
                         <i class="fas fa-trash mr-1"></i> Delete
                     </button>

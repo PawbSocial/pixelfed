@@ -51,10 +51,10 @@ trait AdminRelayController
 
         try {
             $this->initializeRelayService();
-            
+
             // Auto-follow is enabled by default, but can be disabled
             $autoFollow = $request->boolean('auto_follow', true);
-            
+
             $relay = $this->relayService->addRelay(
                 $request->input('inbox_url'),
                 $request->input('name'),

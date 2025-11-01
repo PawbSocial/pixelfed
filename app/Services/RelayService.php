@@ -320,6 +320,8 @@ class RelayService
         }
 
         $keyId = config('app.url') . '/i/actor#main-key';
+        $payload = json_encode($activity);
+
         $headers = HttpSignature::signRaw(
             $instanceActor->private_key,
             $keyId,
@@ -333,8 +335,13 @@ class RelayService
 
         try {
             $response = $this->client->post($relay->inbox_url, [
-                'headers' => $headers,
-                'json' => $activity,
+                'curl' => [
+                    CURLOPT_HTTPHEADER => $headers,
+                    CURLOPT_POSTFIELDS => $payload,
+                    CURLOPT_HEADER => true,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                    CURLOPT_SSL_VERIFYHOST => false,
+                ],
                 'timeout' => $this->timeout,
             ]);
 
