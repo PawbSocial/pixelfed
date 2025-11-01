@@ -359,7 +359,7 @@ class RelayService
                     'content_preview' => substr(strip_tags($status->content), 0, 100)
                 ]);
 
-                if (AccountService::blocksDomain($parent->profile_id, $actor->domain) == true) {
+                if (AccountService::blocksDomain($status->profile_id, $actor->domain) == true) {
                     Log::info('Blocked relay content due to domain block', [
                         'relay_id' => $relay->id,
                         'status_id' => $status->id,
@@ -368,7 +368,7 @@ class RelayService
                     return false;
                 }
 
-                $blocks = UserFilterService::blocks($parent->profile_id);
+                $blocks = UserFilterService::blocks($status->profile_id);
                 if ($blocks && in_array($actor->id, $blocks)) {
                     Log::info('Blocked relay content due to user block', [
                         'relay_id' => $relay->id,
