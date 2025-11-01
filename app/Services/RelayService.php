@@ -265,6 +265,9 @@ class RelayService
             case 'Accept':
                 return $this->handleRelayAccept($relay, $activity);
 
+            case 'Announce':
+                return $this->handleRelayAnnounce($relay, $activity);
+
             case 'Undo':
                 return $this->handleRelayUndo($relay, $activity);
 
@@ -322,6 +325,82 @@ class RelayService
             $relay->update(['following' => true, 'is_active' => true]);
             Log::info('Relay accepted our follow request', ['relay_id' => $relay->id]);
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle Announce activity from relay (content forwarding)
+     */
+    protected function handleRelayAnnounce(Relay $relay, array $activity): bool
+    {
+        if (!isset($activity['object'])) {
+            return false;
+        }
+
+        $objectUrl = $activity['object'];
+        Log::info('Received content announce from relay', [
+            'relay_id' => $relay->id,
+            'object_url' => $objectUrl,
+            'activity_id' => $activity['id'] ?? 'unknown'
+        ]);
+
+        try {
+            // Fetch the original content that was announced
+            $status = Helpers::statusFetch($objectUrl);
+
+            if ($status) {
+                Log::info('Successfully processed relay content', [
+                    'relay_id' => $relay->id,
+                    'status_id' => $status->id,
+                    'object_url' => $objectUrl,
+                    'author' => $status->profile->username . '@' . $status->profile->domain,
+                    'content_preview' => substr(strip_tags($status->content), 0, 100)
+                ]);
+
+                if (AccountService::blocksDomain($parent->profile_id, $actor->domain) == true) {
+                    Log::info('Blocked relay content due to domain block', [
+                        'relay_id' => $relay->id,
+                        'status_id' => $status->id,
+                        'domain' => $actor->domain
+                    ]);
+                    return;
+                }
+
+                $blocks = UserFilterService::blocks($parent->profile_id);
+                if ($blocks && in_array($actor->id, $blocks)) {
+                    Log::info('Blocked relay content due to user block', [
+                        'relay_id' => $relay->id,
+                        'status_id' => $status->id,
+                        'actor_id' => $actor->id
+                    ]);
+                    return;
+                }
+
+                // Update relay health tracking
+                $relay->update([
+                    'last_successful_delivery_at' => now(),
+                    'failed_delivery_count' => 0
+                ]);
+
+                return true;
+            } else {
+                Log::warning('Relay announced content but statusFetch returned null', [
+                    'relay_id' => $relay->id,
+                    'object_url' => $objectUrl
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to process relay content', [
+                'relay_id' => $relay->id,
+                'object_url' => $objectUrl,
+                'error' => $e->getMessage()
+            ]);
+
+            // Track failed delivery
+            $relay->increment('failed_delivery_count');
+            $relay->update(['last_failed_delivery_at' => now()]);
         }
 
         return false;
