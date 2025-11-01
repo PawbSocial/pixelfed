@@ -252,17 +252,19 @@ class RelayService
 		$signature = is_array($headers['signature']) ? $headers['signature'][0] : $headers['signature'];
         $signatureData = HttpSignature::parseSignatureHeader($signature);
 
-        if (!$signatureData) {
+        if (! isset($signatureData)) {
+            Log::warning('Incoming relay activity signature failed to parse', ['signature' => $signature]);
             return null;
         }
 
         $keyId = $signatureData['keyId'] ?? null;
-        if (!$keyId) {
+        if (! isset($keyId)) {
+            Log::warning('Incoming relay activity missing KeyId in signature', ['signatureData' => $signatureData]);
             return null;
         }
 
         $relay = Relay::where('actor_url', 'like', parse_url($keyId, PHP_URL_HOST), '%')->first();
-        if (!$relay || !$relay->metadata || !isset($relay->metadata['public_key'])) {
+        if (!isset($relay) || !isset($relay->metadata['public_key'])) {
             return null;
         }
 
