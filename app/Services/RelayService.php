@@ -48,7 +48,7 @@ class RelayService
         $metadata = $this->fetchRelayInfo($actorUrl);
 
         $relay = Relay::create([
-            'name' => $name ?: $metadata['name'] ?? null,
+            'name' => $name ?: ($metadata['name'] ?? null),
             'inbox_url' => $inboxUrl,
             'actor_url' => $actorUrl,
             'is_active' => false,
@@ -384,8 +384,12 @@ class RelayService
     /**
      * Detect relay software type
      */
-    protected function detectRelaySoftware(array $actorData): ?string
+    protected function detectRelaySoftware(?array $actorData): ?string
     {
+        if (!$actorData) {
+            return 'unknown';
+        }
+
         if (isset($actorData['software'])) {
             return $actorData['software'];
         }
@@ -427,7 +431,15 @@ class RelayService
      */
     protected function deriveActorUrl(string $inboxUrl): string
     {
-        return rtrim(str_replace('/inbox', '', $inboxUrl), '/');
+        // For most relays, the actor URL follows the pattern:
+        // Inbox: https://relay.example.com/inbox
+        // Actor: https://relay.example.com/actor
+        if (str_ends_with($inboxUrl, '/inbox')) {
+            return str_replace('/inbox', '/actor', $inboxUrl);
+        }
+
+        // Fallback: assume actor is at the base URL
+        return rtrim($inboxUrl, '/') . '/actor';
     }
 
     /**
