@@ -263,7 +263,7 @@ class RelayService
             return null;
         }
 
-        $relay = Relay::where('actor_url', 'like', parse_url($keyId, PHP_URL_HOST), '%')->first();
+        $relay = Relay::where('actor_url', 'like', '%' . parse_url($keyId, PHP_URL_HOST) . '%')->first();
         if (!isset($relay) || !isset($relay->metadata['public_key'])) {
             return null;
         }
