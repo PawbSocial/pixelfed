@@ -32,6 +32,14 @@ return [
         ],
 
         'authorized_fetch' => env('AUTHORIZED_FETCH', false),
+
+        'relay' => [
+            'enabled' => env('AP_RELAY_ENABLED', false),
+            'auto_follow' => env('AP_RELAY_AUTO_FOLLOW', true),
+            'delivery_timeout' => env('AP_RELAY_DELIVERY_TIMEOUT', 30),
+            'max_failed_deliveries' => env('AP_RELAY_MAX_FAILED_DELIVERIES', 10),
+            'retry_interval' => env('AP_RELAY_RETRY_INTERVAL', 3600), // seconds
+        ],
     ],
 
     'atom' => [

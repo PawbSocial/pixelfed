@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\InstanceActor;
+use App\Services\RelayService;
 use Cache;
 
 class InstanceActorController extends Controller
@@ -17,9 +18,31 @@ class InstanceActorController extends Controller
 		return response($res)->header('Content-Type', 'application/activity+json');
 	}
 
-	public function inbox()
+	public function inbox(Request $request)
 	{
-		return;
+		if (!config('federation.activitypub.relay.enabled', false)) {
+			return response('', 404);
+		}
+
+		$headers = $request->headers->all();
+		$payload = $request->getContent();
+
+		if (!$payload || empty($payload)) {
+			return response('', 400);
+		}
+
+		$activity = json_decode($payload, true, 8);
+		if (!isset($activity['type'], $activity['actor'])) {
+			return response('', 400);
+		}
+
+		// Only handle relay-related activities
+		if (in_array($activity['type'], ['Follow', 'Undo', 'Accept'])) {
+			$relayService = new RelayService();
+			$relayService->processIncomingRelayActivity($activity);
+		}
+
+		return response('', 202);
 	}
 
 	public function outbox()
