@@ -1504,6 +1504,8 @@ class ApiV1Controller extends Controller
         $status['bookmarked'] = BookmarkService::get($user->profile_id, $status['id']);
         $status['reblogged'] = ReblogService::get($user->profile_id, $status['id']);
 
+        UnlikePipeline::dispatch($like)->onQueue('feed');
+
         return $this->json($status);
     }
 

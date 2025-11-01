@@ -565,6 +565,8 @@ class RelayService
             throw new \Exception('Instance actor not found');
         }
 
+        // TODO: Consider Helpers::sendSignedObject() refactor
+
         $keyId = config('app.url') . '/i/actor#main-key';
         $payload = json_encode($activity);
 
