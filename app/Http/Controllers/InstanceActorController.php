@@ -31,6 +31,8 @@ class InstanceActorController extends Controller
 			return response('', 400);
 		}
 
+        Log::info('Received relay activity', ['headers' => $headers, 'payload' => $payload]);
+
 		$activity = json_decode($payload, true, 8);
 		if (!isset($activity['type'], $activity['actor'])) {
 			return response('', 400);
