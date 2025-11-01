@@ -63,6 +63,7 @@
 						{{-- <a class="dropdown-item font-weight-bold {{request()->is('*discover*')?'active':''}}" href="{{route('admin.discover')}}">Discover</a> --}}
 						<a class="dropdown-item font-weight-bold {{request()->is('*hashtags*')?'active':''}}" href="{{route('admin.hashtags')}}">Hashtags</a>
 						<a class="dropdown-item font-weight-bold {{request()->is('*instances*')?'active':''}}" href="{{route('admin.instances')}}">Instances</a>
+						<a class="dropdown-item font-weight-bold {{request()->is('*relay*')?'active':''}}" href="{{route('admin.relays')}}">Relays</a>
 						<a class="dropdown-item font-weight-bold {{request()->is('*media*')?'active':''}}" href="{{route('admin.media')}}">Media</a>
 						<a class="dropdown-item font-weight-bold {{request()->is('*site-news*')?'active':''}}" href="/i/admin/site-news">Newsroom</a>
 						<a class="dropdown-item font-weight-bold {{request()->is('*profiles*')?'active':''}}" href="/i/admin/profiles">Profiles</a>
