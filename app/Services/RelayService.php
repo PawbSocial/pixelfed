@@ -262,6 +262,9 @@ class RelayService
             case 'Follow':
                 return $this->handleRelayFollow($relay, $activity);
 
+            case 'Accept':
+                return $this->handleRelayAccept($relay, $activity);
+
             case 'Undo':
                 return $this->handleRelayUndo($relay, $activity);
 
@@ -303,6 +306,21 @@ class RelayService
         if (isset($activity['object']['type']) && $activity['object']['type'] === 'Follow') {
             $relay->update(['following' => false]);
             Log::info('Relay unfollowed us', ['relay_id' => $relay->id]);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle Accept activity from relay
+     */
+    protected function handleRelayAccept(Relay $relay, array $activity): bool
+    {
+        // Relay accepted our follow request
+        if (isset($activity['object']['type']) && $activity['object']['type'] === 'Follow') {
+            $relay->update(['following' => true, 'is_active' => true]);
+            Log::info('Relay accepted our follow request', ['relay_id' => $relay->id]);
             return true;
         }
 

@@ -33,7 +33,6 @@ use App\Services\PollService;
 use App\Services\PushNotificationService;
 use App\Services\ReblogService;
 use App\Services\RelationshipService;
-use App\Services\RelayService;
 use App\Services\SanitizeService;
 use App\Services\StoryIndexService;
 use App\Services\UserFilterService;
@@ -633,22 +632,6 @@ class Inbox
         $activity = $this->payload['object'];
 
         if (! $actor || $actor->domain == null) {
-            return;
-        }
-
-        // Check if this announce comes from a relay
-        if ($this->isFromRelay($this->payload['actor'])) {
-            // For relay announces, we want to process the content
-            // but not create a "reblog" by the relay itself
-            // Instead, we fetch and store the original content
-            $parent = Helpers::statusFetch($activity);
-            if ($parent && !empty($parent)) {
-                Log::info('Received content via relay', [
-                    'relay_actor' => $this->payload['actor'],
-                    'content_url' => $activity,
-                    'status_id' => $parent->id,
-                ]);
-            }
             return;
         }
 
@@ -1453,17 +1436,5 @@ class Inbox
             ->onQueue('move')
             ->delay(now()->addMinutes(random_int(1, 3)))
             ->dispatch();
-    }
-
-    /**
-     * Check if actor is from a known relay
-     */
-    protected function isFromRelay(string $actorUrl): bool
-    {
-        if (!config('federation.activitypub.relay.enabled', false)) {
-            return false;
-        }
-
-        return \App\Models\Relay::where('actor_url', $actorUrl)->exists();
     }
 }

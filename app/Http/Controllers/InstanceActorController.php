@@ -36,11 +36,8 @@ class InstanceActorController extends Controller
 			return response('', 400);
 		}
 
-		// Only handle relay-related activities
-		if (in_array($activity['type'], ['Follow', 'Undo', 'Accept'])) {
-			$relayService = new RelayService();
-			$relayService->processIncomingRelayActivity($activity);
-		}
+		$relayService = new RelayService();
+        $relayService->processIncomingRelayActivity($activity);
 
 		return response('', 202);
 	}
