@@ -84,9 +84,12 @@ class StatusActivityPubDeliver implements ShouldQueue
 		$audience = array_values(array_unique(array_merge($audience, $mentions, $parentInbox)));
 
 		// Add relay inboxes for public content
-		if (config('federation.activitypub.relay.enabled', false) && $status->scope === 'public') {
+		if (config('federation.activitypub.relay.enabled') && $status->scope === 'public') {
 			$relayService = new \App\Services\RelayService();
 			$relayInboxes = $relayService->getActiveRelayInboxes();
+
+            Log::info('Adding relay inboxes to audience', ['relays' => $relayInboxes]);
+
 			$audience = array_values(array_unique(array_merge($audience, $relayInboxes)));
 		}
 
