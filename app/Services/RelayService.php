@@ -355,25 +355,16 @@ class RelayService
                     'relay_id' => $relay->id,
                     'status_id' => $status->id,
                     'object_url' => $objectUrl,
-                    'author' => $status->profile->username . '@' . $status->profile->domain,
-                    'content_preview' => substr(strip_tags($status->content), 0, 100)
+                    'author' => $status->profile->username
                 ]);
 
-                if (AccountService::blocksDomain($status->profile_id, $actor->domain) == true) {
-                    Log::info('Blocked relay content due to domain block', [
-                        'relay_id' => $relay->id,
-                        'status_id' => $status->id,
-                        'domain' => $actor->domain
-                    ]);
-                    return false;
-                }
+                $domain = $status->profile->domain;
 
-                $blocks = UserFilterService::blocks($status->profile_id);
-                if ($blocks && in_array($actor->id, $blocks)) {
-                    Log::info('Blocked relay content due to user block', [
+                if (Instance::moderated()->whereDomain($domain)->exists()) {
+                    Log::info('Content from moderated instance - skipping relay delivery', [
                         'relay_id' => $relay->id,
-                        'status_id' => $status->id,
-                        'actor_id' => $actor->id
+                        'domain' => $domain,
+                        'status_id' => $status->id
                     ]);
                     return false;
                 }
