@@ -31,6 +31,10 @@
                         </div>
                     </div>
                 </div>
+                <!-- show announcement card -->
+                <div v-if="showAnnouncements && getScope() === 'home'" class="my-4 card-tips">
+                    <announcements-card v-on:show-tips="showAnnouncements = $event"></announcements-card>
+                </div>
             </transition>
             <status
                 v-for="(status, index) in feed"
@@ -179,6 +183,7 @@
                 endFeedReached: false,
                 postIndex: 0,
                 showMenu: false,
+				showAnnouncements: true,
                 showLikesModal: false,
                 likesModalPost: {},
                 showReportModal: false,

@@ -32,9 +32,11 @@
 									</div>
 								</div>
 							</div>
-							<!-- <div v-if="index == 0 && showTips && !loading" class="my-4 card-tips">
+
+                            <!-- show announcement card -->
+							<div v-if="index == 0 && showTips && !loading" class="my-4 card-tips">
 								<announcements-card v-on:show-tips="showTips = $event"></announcements-card>
-							</div> -->
+							</div>
 
 							<!-- <div v-if="index == 2 && showSuggestions == true && suggestions.length" class="card status-card rounded-0 shadow-none border">
 								<div class="card-header d-flex align-items-center justify-content-between bg-white border-0 pb-0">

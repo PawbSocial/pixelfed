@@ -88,10 +88,10 @@ Vue.component(
   require('./components/PostMenu.vue').default
 );
 
-// Vue.component(
-//  'announcements-card',
-//  require('./components/AnnouncementsCard.vue').default
-// );
+Vue.component(
+ 'announcements-card',
+ require('./components/AnnouncementsCard.vue').default
+);
 
 Vue.component(
   'story-component',
